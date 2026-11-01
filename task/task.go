@@ -1,6 +1,9 @@
 package task
 
 import (
+	"time"
+
+	"github.com/docker/go-connections/nat"
 	"github.com/google/uuid"
 )
 
@@ -15,7 +18,23 @@ const (
 )
 
 type Task struct {
-	ID    uuid.UUID
-	Name  string
-	State State
+	ID            uuid.UUID
+	Name          string
+	State         State
+	Image         string
+	CPU           float64
+	Memory        int
+	Disk          int
+	ExposePorts   nat.PortSet
+	PortBindings  map[string]string
+	RestartPolicy string
+	StartTime     time.Time
+	FinishTime    time.Time
+}
+
+type TaskEvent struct {
+	ID        uuid.UUID
+	State     State
+	Timestamp time.Time
+	Task      Task
 }
