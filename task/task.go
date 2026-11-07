@@ -146,16 +146,14 @@ func (d *Docker) Stop(id string) DockerResult {
 		log.Printf("Error stopping container %s: %v\n", id, err)
 		return DockerResult{Error: err}
 	}
-
 	_, err = d.Client.ContainerRemove(ctx, id, client.ContainerRemoveOptions{
 		RemoveVolumes: true,
-		RemoveLinks:   true,
+		RemoveLinks:   false,
 		Force:         true,
 	})
 	if err != nil {
 		log.Printf("Error removing container %s: %v\n", id, err)
 		return DockerResult{Error: err}
 	}
-
 	return DockerResult{Action: "stop", Result: "success", Error: nil}
 }
