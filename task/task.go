@@ -25,15 +25,37 @@ const (
 	Failed
 )
 
+var stateTransitionMap = map[State][]State{
+	Pending:   []State{Scheduled},
+	Scheduled: []State{Scheduled, Running, Failed},
+	Running:   []State{Running, Completed, Failed},
+	Completed: []State{},
+	Failed:    []State{},
+}
+
+func Contains(states []State, state State) bool {
+	for _, s := range states {
+		if s == state {
+			return true
+		}
+	}
+	return false
+}
+
+func ValidStateTransition(src State, dst State) bool {
+	return Contains(stateTransitionMap[src], dst)
+}
+
 type Task struct {
 	ID            uuid.UUID
+	ContainerID   string
 	Name          string
 	State         State
 	Image         string
 	CPU           float64
-	Memory        int
-	Disk          int
-	ExposePorts   network.PortSet
+	Memory        int64
+	Disk          int64
+	ExposedPorts  network.PortSet
 	PortBindings  map[string]string
 	RestartPolicy container.RestartPolicyMode
 	StartTime     time.Time
@@ -52,19 +74,39 @@ type Config struct {
 	AttachStdin   bool
 	AttachStdout  bool
 	AttachStderr  bool
-	ExposePorts   network.PortSet
+	ExposedPorts  network.PortSet
 	Cmd           []string
 	Image         string
-	Cpu           float64
+	CPU           float64
 	Memory        int64
 	Disk          int64
 	Env           []string
 	RestartPolicy container.RestartPolicyMode
 }
 
+func NewConfig(t *Task) *Config {
+	return &Config{
+		Name:          t.Name,
+		ExposedPorts:  t.ExposedPorts,
+		Image:         t.Image,
+		CPU:           t.CPU,
+		Memory:        t.Memory,
+		Disk:          t.Disk,
+		RestartPolicy: t.RestartPolicy,
+	}
+}
+
 type Docker struct {
 	Client *client.Client
 	Config Config
+}
+
+func NewDocker(c *Config) *Docker {
+	dc, _ := client.New(client.FromEnv)
+	return &Docker{
+		Client: dc,
+		Config: *c,
+	}
 }
 
 type DockerResult struct {
@@ -89,14 +131,14 @@ func (d *Docker) Run() DockerResult {
 
 	r := container.Resources{
 		Memory:   d.Config.Memory,
-		NanoCPUs: int64(d.Config.Cpu * math.Pow(10, 9)),
+		NanoCPUs: int64(d.Config.CPU * math.Pow(10, 9)),
 	}
 
 	cc := container.Config{
 		Image:        d.Config.Image,
 		Tty:          false,
 		Env:          d.Config.Env,
-		ExposedPorts: d.Config.ExposePorts,
+		ExposedPorts: d.Config.ExposedPorts,
 	}
 
 	hc := container.HostConfig{
