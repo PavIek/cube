@@ -33,7 +33,8 @@ func main() {
 
 	go w.RunTasks()
 	go w.CollectStats()
-	go wapi.Start()
+
+	wapi.Start()
 
 	fmt.Println("Starting Cube manager")
 
