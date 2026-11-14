@@ -65,6 +65,8 @@ func (m *Manager) updateTasks() {
 			log.Printf("Error connecting to %v: %v\n", worker, err)
 		}
 
+		fmt.Println("debug resp:", resp)
+
 		if resp.StatusCode != http.StatusOK {
 			log.Printf("Error sending request: %v\n", err)
 		}
