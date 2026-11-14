@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/PavIek/cube/manager"
 	"github.com/PavIek/cube/task"
@@ -33,8 +34,9 @@ func main() {
 
 	go w.RunTasks()
 	go w.CollectStats()
+	go wapi.Start()
 
-	wapi.Start()
+	time.Sleep(5 * time.Second)
 
 	fmt.Println("Starting Cube manager")
 
