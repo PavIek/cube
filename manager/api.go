@@ -25,7 +25,7 @@ func (a *Api) initRouter() {
 		r.Post("/", a.StartTaskHandler)
 		r.Get("/", a.GetTasksHandler)
 		r.Route("/{taskID}", func(r chi.Router) {
-			r.Delete("/", a.StartTaskHandler)
+			r.Delete("/", a.StopTaskHandler)
 		})
 	})
 }
